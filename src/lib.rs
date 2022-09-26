@@ -52,16 +52,16 @@ fn encode_u32_chunk(chunk: &[u8]) -> Vec<u8> {
         _ => unreachable!(),
     };
 
-    let indata = usize::try_from(in_value).unwrap();
-    let mut outdata = [0_u8; 5];
-    let mut remainder = indata % 85_usize.pow(4);
-    outdata[0] = BASE85_CHARS[indata / 85_usize.pow(4)];
-    outdata[1] = BASE85_CHARS[remainder / 85_usize.pow(3)];
-    remainder %= 85_usize.pow(3);
-    outdata[2] = BASE85_CHARS[remainder / 85_usize.pow(2)];
-    remainder %= 85_usize.pow(2);
-    outdata[3] = BASE85_CHARS[remainder / 85];
-    outdata[4] = BASE85_CHARS[remainder % 85];
+    let in_value = usize::try_from(in_value).unwrap();
+
+    // Powers of 85: 85, 7_225, 614_125,52_200_625
+    let outdata = [
+        BASE85_CHARS[in_value / 52_200_625],
+        BASE85_CHARS[(in_value % 52_200_625) / 614_125],
+        BASE85_CHARS[(in_value % 614_125) / 7_225],
+        BASE85_CHARS[(in_value % 7_225_usize) / 85],
+        BASE85_CHARS[(in_value % 85_usize)],
+    ];
     outdata[0..=chunk.len()].to_vec()
 }
 
@@ -92,7 +92,7 @@ fn decode_chunk(chunk: &[u8]) -> Option<[u8; 4]> {
             }
             _ => None,
         });
-    accum.map(|v| v.to_be_bytes())
+    accum.map(u32::to_be_bytes)
 }
 
 /// decode() try to decode a base85 encoded &str and return an `Option<Vec<u8>>`
