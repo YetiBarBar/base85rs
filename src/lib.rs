@@ -44,13 +44,13 @@ static BASE85_CHARS: &[u8; 85] =
 #[must_use]
 // Encode a single chunk. At most 4 bytes, at least 1.
 fn encode_u32_chunk(chunk: &[u8]) -> Vec<u8> {
-    let in_value = match chunk.len() {
-        1 => u32::from_be_bytes([chunk[0], 0, 0, 0]),
-        2 => u32::from_be_bytes([chunk[0], chunk[1], 0, 0]),
-        3 => u32::from_be_bytes([chunk[0], chunk[1], chunk[2], 0]),
-        4 => u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]),
+    let in_value = u32::from_be_bytes(match chunk.len() {
+        1 => [chunk[0], 0, 0, 0],
+        2 => [chunk[0], chunk[1], 0, 0],
+        3 => [chunk[0], chunk[1], chunk[2], 0],
+        4 => [chunk[0], chunk[1], chunk[2], chunk[3]],
         _ => unreachable!(),
-    };
+    });
 
     let in_value = usize::try_from(in_value).unwrap();
 
