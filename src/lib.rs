@@ -43,7 +43,7 @@ static BASE85_CHARS: &[u8; 85] =
 
 #[must_use]
 // Encode a single chunk. At most 4 bytes, at least 1.
-fn encode_u32_chunk(chunk: &[u8]) -> Vec<u8> {
+fn encode_u32_chunk(chunk: &[u8], buffer: &mut [u8; 5]) -> usize {
     let in_value = u32::from_be_bytes(match chunk.len() {
         1 => [chunk[0], 0, 0, 0],
         2 => [chunk[0], chunk[1], 0, 0],
@@ -55,14 +55,14 @@ fn encode_u32_chunk(chunk: &[u8]) -> Vec<u8> {
     let in_value = usize::try_from(in_value).unwrap();
 
     // Powers of 85: 85, 7_225, 614_125,52_200_625
-    let outdata = [
+    *buffer = [
         BASE85_CHARS[in_value / 52_200_625],
         BASE85_CHARS[(in_value % 52_200_625) / 614_125],
         BASE85_CHARS[(in_value % 614_125) / 7_225],
         BASE85_CHARS[(in_value % 7_225_usize) / 85],
         BASE85_CHARS[(in_value % 85_usize)],
     ];
-    outdata[0..=chunk.len()].to_vec()
+    chunk.len()
 }
 
 /// encode() turns a slice of bytes into base85 encoded `String`
@@ -76,7 +76,15 @@ fn encode_u32_chunk(chunk: &[u8]) -> Vec<u8> {
 /// ```
 #[must_use]
 pub fn encode(data: &[u8]) -> String {
-    let outdata: Vec<u8> = data.chunks(4).flat_map(encode_u32_chunk).collect();
+    let mut buffer = [0; 5];
+    // let outdata: Vec<u8> = data.chunks(4).flat_map(encode_u32_chunk).collect();
+    let outdata = data
+        .chunks(4)
+        .fold(Vec::with_capacity(data.len()), |mut acc, chunk| {
+            let c = encode_u32_chunk(chunk, &mut buffer);
+            acc.extend(buffer[0..=c].iter());
+            acc
+        });
     String::from_utf8(outdata).unwrap_or_default()
 }
 

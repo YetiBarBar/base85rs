@@ -15,3 +15,11 @@ keywords = ["base85"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[dev-dependencies]
+criterion = {version = "0.3", features = ["html_reports"]}
+rand = "0.8.5"
+
+[[bench]]
+name = "encode"
+harness = false
