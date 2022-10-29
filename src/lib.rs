@@ -77,7 +77,7 @@ fn encode_u32_chunk(chunk: &[u8], buffer: &mut [u8; 5]) -> usize {
 #[must_use]
 pub fn encode(data: &[u8]) -> String {
     let mut buffer = [0; 5];
-    // let outdata: Vec<u8> = data.chunks(4).flat_map(encode_u32_chunk).collect();
+
     let outdata = data
         .chunks(4)
         .fold(Vec::with_capacity(data.len()), |mut acc, chunk| {
@@ -90,7 +90,7 @@ pub fn encode(data: &[u8]) -> String {
 
 // Decode a single chunk. At most, 5 `u8`, at least one.
 fn decode_chunk(chunk: &[u8]) -> Option<[u8; 4]> {
-    let accum: Option<u32> = chunk
+    chunk
         .iter()
         .try_fold(0, |mut acc, item| match to_x85(*item) {
             Some(value) => {
@@ -99,8 +99,8 @@ fn decode_chunk(chunk: &[u8]) -> Option<[u8; 4]> {
                 Some(acc)
             }
             _ => None,
-        });
-    accum.map(u32::to_be_bytes)
+        })
+        .map(u32::to_be_bytes)
 }
 
 /// decode() try to decode a base85 encoded &str and return an `Option<Vec<u8>>`
@@ -114,11 +114,12 @@ fn decode_chunk(chunk: &[u8]) -> Option<[u8; 4]> {
 /// ```
 #[must_use]
 pub fn decode(instr: &str) -> Option<Vec<u8>> {
-    let data = instr
-        .chars()
-        .filter(|c| !char::is_ascii_whitespace(c))
-        .collect::<String>();
-    let data = data.as_bytes();
+    let data: Vec<u8> = instr
+        .as_bytes()
+        .iter()
+        .filter(|&chr| *chr != 0x20)
+        .copied()
+        .collect();
 
     let mut outdata = Vec::<u8>::new();
 
@@ -127,7 +128,9 @@ pub fn decode(instr: &str) -> Option<Vec<u8>> {
         outdata.extend(value);
     }
 
-    if let Some(in_index) = data.chunks(5).find(|chunk| chunk.len() != 5) {
+    let rem = data.len() % 5;
+    if rem != 0 {
+        let in_index = &data[data.len() - rem..];
         let chunk_len = in_index.len();
         let mut in_index = in_index.to_vec();
 
