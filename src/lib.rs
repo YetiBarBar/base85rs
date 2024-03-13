@@ -60,7 +60,7 @@ fn encode_u32_chunk(chunk: &[u8], buffer: &mut [u8; 5]) -> usize {
         BASE85_CHARS[(in_value % 52_200_625) / 614_125],
         BASE85_CHARS[(in_value % 614_125) / 7_225],
         BASE85_CHARS[(in_value % 7_225_usize) / 85],
-        BASE85_CHARS[(in_value % 85_usize)],
+        BASE85_CHARS[in_value % 85_usize],
     ];
     chunk.len()
 }
