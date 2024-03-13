@@ -17,7 +17,7 @@ keywords = ["base85"]
 [dependencies]
 
 [dev-dependencies]
-criterion = {version = "0.3", features = ["html_reports"]}
+criterion = { version = "0.5.1", features = ["html_reports"] }
 rand = "0.8.5"
 
 [[bench]]
