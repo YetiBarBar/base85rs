@@ -65,7 +65,7 @@ fn encode_u32_chunk(chunk: &[u8], buffer: &mut [u8; 5]) -> usize {
     chunk.len()
 }
 
-/// encode() turns a slice of bytes into base85 encoded `String`
+/// `encode()` turns a slice of bytes into base85 encoded `String`
 ///
 /// # Example
 ///
@@ -103,7 +103,7 @@ fn decode_chunk(chunk: &[u8]) -> Option<[u8; 4]> {
         .map(u32::to_be_bytes)
 }
 
-/// decode() try to decode a base85 encoded &str and return an `Option<Vec<u8>>`
+/// `decode()` try to decode a base85 encoded &str and return an `Option<Vec<u8>>`
 ///
 /// # Example
 ///
